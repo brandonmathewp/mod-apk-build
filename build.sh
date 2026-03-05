@@ -128,20 +128,37 @@ cp $appDebugOutput/lib/arm64-v8a/${libName} $gameOutput/lib/arm64-v8a/libModBNM.
 
 echo -e "Copy smali_classes to ${gameOutput}"
 cp -r $appDebugOutput/smali_classes* $gameOutput
-gameActivityFile=$gameOutput/smali/${app_activity//./\/}.smali
-echo -e "Edit ${gameActivityFile}"
+
+# Dynamically find the activity file across all smali folders
+activityPath=${app_activity//./\/}.smali
+gameActivityFile=$(find "$gameOutput" -path "*/smali*/$activityPath" | head -n 1)
+
+if [[ -z "$gameActivityFile" || ! -f "$gameActivityFile" ]]; then
+  echo -e "Error: Could not find ${activityPath} in any smali folder inside ${gameOutput}." >&2
+  exit 1
+fi
+
+echo -e "Found and editing ${gameActivityFile}"
 
 if [[ "$OSTYPE" == "linux-gnu" || "$OSTYPE" == "linux-android" ]]; then
   sed -i '/.method protected onCreate/a\
-  invoke-static {p0}, Lcom/android/support/Main;->start(Landroid/content/Context;)V' $gameActivityFile
+  invoke-static {p0}, Lcom/android/support/Main;->start(Landroid/content/Context;)V' "$gameActivityFile"
 else
   sed -i '' '/.method protected onCreate/a\
-  invoke-static {p0}, Lcom/android/support/Main;->start(Landroid/content/Context;)V' $gameActivityFile
+  invoke-static {p0}, Lcom/android/support/Main;->start(Landroid/content/Context;)V' "$gameActivityFile"
 fi
 
 if [ $? -ne 0 ]; then
   echo -e "Cannot replace ${app_activity}, try again." >&2
   exit 1
+fi
+
+# Verify the hook was successfully injected
+if ! grep -q "Lcom/android/support/Main;->start(Landroid/content/Context;)V" "$gameActivityFile"; then
+  echo -e "Error: Failed to inject the hook into ${gameActivityFile}. The 'onCreate' method might be missing or obfuscated." >&2
+  exit 1
+else
+  echo -e "Success: Hook verified in ${gameActivityFile}"
 fi
 
 echo -e "\nBuild and Sign ${gameFile}..."
