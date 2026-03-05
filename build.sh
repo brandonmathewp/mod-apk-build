@@ -126,8 +126,28 @@ echo -e "Copy ${libName} to libModBNM.so"
 find $gameOutput/lib/* -maxdepth 0 ! -name "arm64-v8a" -exec rm -rf '{}' +
 cp $appDebugOutput/lib/arm64-v8a/${libName} $gameOutput/lib/arm64-v8a/libModBNM.so
 
-echo -e "Copy smali_classes to ${gameOutput}"
-cp -r $appDebugOutput/smali_classes* $gameOutput
+echo -e "Safely appending Mod Menu smali folders as new multidex..."
+# 1. Find the next available smali_classes number in the game
+NEXT_DEX=2
+while [ -d "$gameOutput/smali_classes$NEXT_DEX" ]; do
+  ((NEXT_DEX++))
+done
+
+# 2. Copy the Mod Menu's base 'smali' folder as the next available multidex
+if [ -d "$appDebugOutput/smali" ]; then
+  echo "Injecting mod menu smali -> smali_classes$NEXT_DEX"
+  cp -r "$appDebugOutput/smali" "$gameOutput/smali_classes$NEXT_DEX"
+  ((NEXT_DEX++))
+fi
+
+# 3. Copy any additional multidex folders from the Mod Menu
+i=2
+while [ -d "$appDebugOutput/smali_classes$i" ]; do
+  echo "Injecting mod menu smali_classes$i -> smali_classes$NEXT_DEX"
+  cp -r "$appDebugOutput/smali_classes$i" "$gameOutput/smali_classes$NEXT_DEX"
+  ((NEXT_DEX++))
+  ((i++))
+done
 
 # Dynamically find the activity file across all smali folders
 activityPath=${app_activity//./\/}.smali
