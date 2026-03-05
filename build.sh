@@ -39,7 +39,7 @@ fi
       apps["$col1"]="$col1,$col2,$col3"
     fi
   done
-} < build.csv
+} < apps.csv
 
 usage() {
   cat << EOF
@@ -76,7 +76,7 @@ fi
 IFS=, read -r app_name app_activity app_download <<< "${apps[$1]}"
 
 if [[ -z "$app_name" ]]; then
-  echo "Error: App '$1' not found in build.csv"
+  echo "Error: App '$1' not found in apps.csv"
   usage
 fi
 
