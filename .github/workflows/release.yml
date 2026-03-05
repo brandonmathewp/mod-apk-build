@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        game: [wet-wealth, horny-villa, ark-recode, mafia-queens]
+        game: [xphero, pool-billiard]
     runs-on: ubuntu-latest
 
     steps:
