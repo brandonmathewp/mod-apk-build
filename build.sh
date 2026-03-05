@@ -5,7 +5,7 @@ DECODE_DIR=decode
 DIST_DIR=dist
 SIGN_KS=sign.jks
 APP_DEBUG_FILE=app-debug.apk
-APP_DEBUG_DOWNLOAD_URL=https://github.com/fourcels/Android-Mod-Menu-BNM/releases/latest/download/${APP_DEBUG_FILE}
+APP_DEBUG_DOWNLOAD_URL=https://github.com/brandonmathewp/Android-Mod-Menu-BNM/releases/latest/download/${APP_DEBUG_FILE}
 declare -A apps
 mkdir -p $DOWNLOAD_DIR
 
