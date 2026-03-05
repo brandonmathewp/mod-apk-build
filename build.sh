@@ -25,8 +25,8 @@ check_command() {
 
 check_command curl apktool apksigner
 
-if [[ ! -f build.csv ]]; then
-  echo "Error: build.csv not found."
+if [[ ! -f apps.csv ]]; then
+  echo "Error: apps.csv not found."
   exit 1
 fi
 
