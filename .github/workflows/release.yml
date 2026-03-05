@@ -1,25 +1,21 @@
 name: Release
 
 on:
-  release:
-    types: [released]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        game: [xphero, pool-billiard]
+  build-and-release:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-java@v5
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-java@v4
         with:
-          distribution: "temurin" # See 'Supported distributions' for available options
+          distribution: "temurin"
           java-version: "21"
 
       - name: Setup apksigner
@@ -32,14 +28,35 @@ jobs:
           curl -L -o /usr/local/bin/apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar
           chmod +x /usr/local/bin/apktool /usr/local/bin/apktool.jar
 
-      - name: Build APK
+      - name: Build xphero
         env:
           SIGN_KS_PASS: ${{ secrets.SIGN_KS_PASS }}
-        run: ./build.sh ${{ matrix.game }}
+        run: ./build.sh xphero
+
+      - name: Build pool-billiards
+        env:
+          SIGN_KS_PASS: ${{ secrets.SIGN_KS_PASS }}
+        run: ./build.sh pool-billiards
+
+      - name: Delete Old Release and Tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release delete latest --cleanup-tag --yes || true
+          git push --delete origin latest || true
+
+      - name: Create Continuous Tag
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git tag latest
+          git push origin latest
 
       - name: Release
         uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
         with:
+          tag_name: latest
+          name: Latest Build
+          make_latest: true
           files: |
             dist/*.apk
