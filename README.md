@@ -8,4 +8,4 @@ build android menu mod with [Android-Mod-Menu-BNM](https://github.com/fourcels/A
 
 1. Replace `sign.jks` with yours
 
-2. Run shell `./build.sh -p kspass wet-wealth`
+2. Run shell `./build.sh -p kspass game`
