@@ -28,15 +28,18 @@ jobs:
           curl -L -o /usr/local/bin/apktool.jar https://github.com/iBotPeaches/Apktool/releases/download/v2.12.1/apktool_2.12.1.jar
           chmod +x /usr/local/bin/apktool /usr/local/bin/apktool.jar
 
-      - name: Build xphero
+      - name: Build All Games
         env:
           SIGN_KS_PASS: ${{ secrets.SIGN_KS_PASS }}
-        run: ./build.sh xphero
-
-      - name: Build pool-billiards
-        env:
-          SIGN_KS_PASS: ${{ secrets.SIGN_KS_PASS }}
-        run: ./build.sh pool-billiards
+        run: |
+          chmod +x build.sh
+          # Parse apps.csv, skip the header, strip carriage returns, and loop through each app name
+          awk -F, 'NR>1 && $1 != "" {print $1}' apps.csv | tr -d '\r' | while read -r app_name; do
+            echo "========================================"
+            echo "Building $app_name..."
+            echo "========================================"
+            ./build.sh "$app_name" || exit 1
+          done
 
       - name: Delete Old Release and Tag
         env:
