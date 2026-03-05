@@ -82,7 +82,11 @@ fi
 
 echo -e "Downloading ${APP_DEBUG_FILE}..."
 if [[ ! -f ${APP_DEBUG_FILE} ]]; then
-  curl -L $APP_DEBUG_DOWNLOAD_URL -o $APP_DEBUG_FILE
+  curl -L -f $APP_DEBUG_DOWNLOAD_URL -o $APP_DEBUG_FILE
+  if [ $? -ne 0 ]; then
+    echo -e "Error: Failed to download the mod menu APK. Check the URL or GitHub availability." >&2
+    exit 1
+  fi
 else
   echo -e "Exist ${APP_DEBUG_FILE}, skip download."
 fi
@@ -93,9 +97,10 @@ gameFile="${app_name}.apk"
 downloadFile="${DOWNLOAD_DIR}/${gameFile}"
 
 if [[ ! -f ${downloadFile} ]]; then
-  curl -L $download_url -o $downloadFile
+  curl -L -f $download_url -o $downloadFile
   if [ $? -ne 0 ]; then
-    echo -e "Cannot download ${app_name} from ${download_url}, try again." >&2
+    echo -e "Error: Cannot download ${app_name} from ${download_url}. The file might not exist (404)." >&2
+    rm -f $downloadFile # Clean up any partial or error file
     exit 1
   fi
 else
